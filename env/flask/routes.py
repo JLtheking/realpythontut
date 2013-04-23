@@ -1,6 +1,16 @@
 from flask import *
 from functools import wraps
+import sqlite3
 
+#create database
+DATABASE = 'merchandise.db'
+app.config.from_object(__name__)
+
+def connect_db():
+		return sqlite3.connect(app.config['DATABASE'])
+
+
+#create app
 app = Flask(__name__)
 app.secret_key = 'my precious'
 
@@ -42,7 +52,11 @@ def logout():
 @app.route('/hello')
 @login_required
 def hello():
-    return render_template('hello.html')
+    merchandise.db  = connect_db()
+    cur = merchandise.db.execute('select rep_name, amount from reps')
+    sales = [dict(rep_name=row[0], amount=row[1]) for row in cur.fetchall()]
+    merchandise.db.close()
+    return render_template('hello.html', sales=sales)	
 
 if __name__ == '__main__':
     app.run(debug=True)
